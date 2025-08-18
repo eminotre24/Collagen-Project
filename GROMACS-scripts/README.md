@@ -51,16 +51,11 @@ If one imagines the most simple system, for instance, 3 particles (a 2 particle 
  So, this is solved numerically for systems larger than 2. Thats the use of Molecular Dynamics Softwares such as GROMACS. I highly recommend checking out the videos, but also you can check out this [review](https://pubs.acs.org/doi/10.1021/cr040426m), which also talks about MD in general terms. In MD, instead of having simple interactions such as just a Lennard-Jones potential, you have something like this:
 
  $$
- U(\vec{r}) &= 
-\sum_{\text{bonds}} K_d (d - d_0)^2 
-+ \sum_{\text{Urey--Bradley}} K_{UB}(S - S_0)^2 \\
-&\quad + \sum_{\text{angle}} K_\theta (\theta - \theta_0)^2 
-+ \sum_{\text{dihedrals}} K_\chi \left( 1 + \cos(n\chi - \delta) \right) \\
+ U(\vec{r}) &= \sum_{\text{bonds}} K_d (d - d_0)^2 + \sum_{\text{Urey--Bradley}} K_{UB}(S - S_0)^2 \\
+&\quad + \sum_{\text{angle}} K_\theta (\theta - \theta_0)^2 + \sum_{\text{dihedrals}} K_\chi \left( 1 + \cos(n\chi - \delta) \right) \\
 &\quad + \sum_{\text{impropers}} K_\varphi (\varphi - \varphi_0)^2 \\
-&\quad + \sum_{\text{nonbond}} \left\{ 
-\epsilon_{ij} \left[ \left( \frac{R_{ij}^{\min}}{r_{ij}} \right)^{12} 
-- \left( \frac{R_{ij}^{\min}}{r_{ij}} \right)^{6} \right] 
-+ \frac{q_i q_j}{\epsilon r_{ij}} \right\}
+&\quad + \sum_{\text{nonbond}} \left\{ \epsilon_{ij} \left[ \left( \frac{R_{ij}^{\min}}{r_{ij}} \right)^{12} 
+- \left( \frac{R_{ij}^{\min}}{r_{ij}} \right)^{6} \right] + \frac{q_i q_j}{\epsilon r_{ij}} \right\}
  $$
  
 
