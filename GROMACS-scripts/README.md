@@ -30,32 +30,28 @@ Here, you have your input file, output file, the selection of the water model yo
  - **The force field**: Another important parameters that *defines* your simulation. The force field file (`.ff`, is actually a folder) contains all the information regarding the parameters of interaction that define the bonds, and the individual particles. It could be a good time here to explain a little more about how the MD simulations work.
 
 If one imagines the most simple system, for instance, 3 particles (a 2 particle system can be solved analitically), then, the way one would go ahead and simulate this system is as follows:
- - Calculate their interactions: Defined by $U(r_i)$, and accordingly to the type of interactions the particles have, for example, [Lennard-Jonnes Potential](https://en.wikipedia.org/wiki/Lennard-Jones_potential). This potential is defined as:
 
- $$
- U_\text{LJ}(r) = 4\epsilon\left[ \left( \frac{\sigma}{r} \right)^{6} - \left( \frac{\sigma}{r} \right)^{12} \right]
- $$
+Calculate their interactions: Defined by $U(r_i)$, and accordingly to the type of interactions the particles have, for example, [Lennard-Jonnes Potential](https://en.wikipedia.org/wiki/Lennard-Jones_potential). This potential is defined as:
 
- Which defines how the particles interact, in a simple yet realistic way, and basically has an attractive term in the "long range", and a repulsive term in a very short range (the particles cannot overlap/occupy the same space). So, you would calculate each and every interaction, and then get the net force which feels the particle $i$ as:
+$$
+U_\text{LJ}(r) = 4\epsilon\left[ \left( \frac{\sigma}{r} \right)^{6} - \left( \frac{\sigma}{r} \right)^{12} \right]
+$$
 
- $$
- \vec{F} = \frac{\partial U}{\partial r}\hat{r}
- $$
+Which defines how the particles interact, in a simple yet realistic way, and basically has an attractive term in the "long range", and a repulsive term in a very short range (the particles cannot overlap/occupy the same space). So, you would calculate each and every interaction, and then get the net force which feels the particle $i$ as:
 
- Then, whats let to you is to solve the Newton Classical Equations of Motion:
+$$
+\vec{F} = \frac{\partial U}{\partial r}\hat{r}
+$$
 
- $$
- m\ddot{r} = F
- $$
+Then, whats let to you is to solve the Newton Classical Equations of Motion:
 
- So, this is solved numerically for systems larger than 2. Thats the use of Molecular Dynamics Softwares such as GROMACS. I highly recommend checking out the videos, but also you can check out this [review](https://pubs.acs.org/doi/10.1021/cr040426m), which also talks about MD in general terms. In MD, instead of having simple interactions such as just a Lennard-Jones potential, you have something like this:
+$$
+m\ddot{r} = F
+$$
 
- $$
- U(\vec{r}) &= \sum_{\text{bonds}} K_d (d - d_0)^2 + \sum_{\text{Urey--Bradley}} K_{UB}(S - S_0)^2 \\
-&\quad + \sum_{\text{angle}} K_\theta (\theta - \theta_0)^2 + \sum_{\text{dihedrals}} K_\chi \left( 1 + \cos(n\chi - \delta) \right) \\
-&\quad + \sum_{\text{impropers}} K_\varphi (\varphi - \varphi_0)^2 \\
-&\quad + \sum_{\text{nonbond}} \left\{ \epsilon_{ij} \left[ \left( \frac{R_{ij}^{\min}}{r_{ij}} \right)^{12} 
-- \left( \frac{R_{ij}^{\min}}{r_{ij}} \right)^{6} \right] + \frac{q_i q_j}{\epsilon r_{ij}} \right\}
- $$
+So, this is solved numerically for systems larger than 2. Thats the use of Molecular Dynamics Softwares such as GROMACS. I highly recommend checking out the videos, but also you can check out this [review](https://pubs.acs.org/doi/10.1021/cr040426m), which also talks about MD in general terms. In MD, instead of having simple interactions such as just a Lennard-Jones potential, you have something like the expresion that can be found in the review.
+
+So, going back to the force field, your force field basically defines this different parameters for all your atoms (in most general case, particles), and their different functional group (the same atom but interactions change). This atoms are still being handled both classically (perhaps with quantum corrections, but the potentials and solving it is classical), and simple (mostly harmonic oscillators, functioning as pulling the atoms, but not restraining it, in the position that it should have).
+
  
 
