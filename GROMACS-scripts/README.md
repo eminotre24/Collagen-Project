@@ -9,7 +9,7 @@ Additionally to this tutorial (pretty much the basics of GROMACS are laid there)
  - [Presentation on GROMACS](https://www.youtube.com/watch?v=KEfMuHMTBQU&t=1617s&pp=ygUHZ3JvbWFjcw%3D%3D)
  - [GROMACS DOC](https://manual.gromacs.org/current/user-guide/getting-started.html)
  - If you search `gmx` and then the command youre using (for example `gmx mdrun`), you find the documentation of that command, which is pretty useful for understanding the workflow also
- - [MD Parameters DOC](https://manual.gromacs.org/current/user-guide/mdp-options.html): Essential and to understand the inputs of your MD.
+ - [.mdp Parameters DOC](https://manual.gromacs.org/current/user-guide/mdp-options.html): Essential and to understand the inputs of your MD.
 
 All credits to them, this is mostly for myself (so that I can also come back to my notes) but I hope that this can also be useful for someone else starting from zero as I did.
 
