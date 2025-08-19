@@ -27,31 +27,7 @@ gmx pdb2gmx -f ticf.pdb -o ticf_p.gro -water tip3p -ff amber14sb
 
 Here, you have your input file, output file, the selection of the water model you want to use, and the force field you want to use. For understanding better each an every command step, highly recommend looking at the `gmx ...` documentation online. In this case, we get a geometry file `.gro`, and additionally to the PDB file, we input 2 important things:
  - **The water model**: This is how the water molecules in your system are gonna be "managed"/simulated, for instance that the bonds are flexible, the bonds parameters, as 3 particles or less/more, etc. This parameter is choosen accordingly to experimental data, that is, how well certain water model goes with your protein, from comparison with experimental data. You should look this up, for example for collagen water TIP3P is recommended.
- - **The force field**: Another important parameters that *defines* your simulation. The force field file (`.ff`, is actually a folder) contains all the information regarding the parameters of interaction that define the bonds, and the individual particles. It could be a good time here to explain a little more about how the MD simulations work.
-
-If one imagines the most simple system, for instance, 3 particles (a 2 particle system can be solved analitically), then, the way one would go ahead and simulate this system is as follows:
-
-Calculate their interactions: Defined by $U(r_i)$, and accordingly to the type of interactions the particles have, for example, [Lennard-Jonnes Potential](https://en.wikipedia.org/wiki/Lennard-Jones_potential). This potential is defined as:
-
-$$
-U_\text{LJ}(r) = 4\epsilon\left[ \left( \frac{\sigma}{r} \right)^{6} - \left( \frac{\sigma}{r} \right)^{12} \right]
-$$
-
-Which defines how the particles interact, in a simple yet realistic way, and basically has an attractive term in the "long range", and a repulsive term in a very short range (the particles cannot overlap/occupy the same space). So, you would calculate each and every interaction, and then get the net force which feels the particle $i$ as:
-
-$$
-\vec{F} = \frac{\partial U}{\partial r}\hat{r}
-$$
-
-Then, whats let to you is to solve the Newton Classical Equations of Motion:
-
-$$
-m\ddot{r} = F
-$$
-
-So, this is solved numerically for systems larger than 2. Thats the use of Molecular Dynamics Softwares such as GROMACS. I highly recommend checking out the videos, but also you can check out this [review](https://pubs.acs.org/doi/10.1021/cr040426m), which also talks about MD in general terms. In MD, instead of having simple interactions such as just a Lennard-Jones potential, you have something like the expresion that can be found in the review.
-
-So, going back to the force field, your force field basically defines this different parameters for all your atoms (in most general case, particles), and their different functional group (the same atom but interactions change). This atoms are still being handled both classically (perhaps with quantum corrections, but the potentials and solving it is classical), and simple (mostly harmonic oscillators, functioning as pulling the atoms, but not restraining it, in the position that it should have).
+ - **The force field**: Another important parameters that *defines* your simulation. The force field file (`.ff`, is actually a folder) contains all the information regarding the parameters of interaction that define the bond interaction, and the intermolecular interactions, of each particle. 
 
  
 
