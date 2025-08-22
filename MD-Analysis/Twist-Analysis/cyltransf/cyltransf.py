@@ -1,13 +1,14 @@
 # Cylindrical Transformation Approach module
 # Module to store the functions used - keep code cleaner
+import numpy as np
 
-def get_mean_coords_mol(molecule, mask, group):
+def get_mean_coords_mol(universe, protein, molecule, mask, group):
     # Get the Mean Coordinates of the molecule
     mean_coords = None
     chains = protein.fragments[3*molecule:3*molecule + 3]
     colmol = chains[0] + chains[1] + chains[2]
     colmol = colmol.select_atoms(group)
-    for ts in u.trajectory[mask]:
+    for ts in universe.trajectory[mask]:
         coords = colmol.positions / 10
         if mean_coords is None:
             mean_coords = coords.astype(float)
@@ -20,10 +21,10 @@ def get_mean_coords_mol(molecule, mask, group):
     order = np.argsort(mean_coords[:, 2])
     return mean_coords[order]
 
-def mean_com(mask, group = "backbone"):
+def mean_com(universe, protein, mask, group):
     fib_mean = None
     fib = protein.select_atoms(group)
-    for ts in u.trajectory[mask]:
+    for ts in universe.trajectory[mask]:
         com = fib.center_of_mass() / 10
         if fib_mean is None:
             fib_mean = com
