@@ -1,6 +1,6 @@
 Scripts used for both generating MD simulations and also to submit jobs in ACENET. 
 
-## Making a simulation using GROMACS
+## Making a simulation using GROMACS (In Progress)
 For the sake of not forgetting in the future the general (and also some specifics) steps of using GROMACS for generating a Molecular Dynamics simulation, here I label the steps to follow. My knowledge in this is a combination of making the [Lyzosyme Tutorial](http://www.mdtutorials.com/gmx/lysozyme/index.html), and getting my hands dirty trying to replicate the system of Liu et al.
 
 Additionally to this tutorial (pretty much the basics of GROMACS are laid there), here are some resources that helped me understand better the functioning of GROMACS (and also some of the general concepts in Molecular Dynamics):
