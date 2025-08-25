@@ -21,6 +21,28 @@ def get_mean_coords_mol(universe, protein, molecule, mask, group):
     order = np.argsort(mean_coords[:, 2])
     return mean_coords[order]
 
+def get_centered_mean_coords_mol(universe, protein, molecule, mask, group):
+    # Get the Mean Coordinates of the molecule - COM included each step - already centralized
+    mean_coords = None
+    chains = protein.fragments[3*molecule:3*molecule + 3]
+    colmol = chains[0] + chains[1] + chains[2]
+    colmol = colmol.select_atoms(group)
+    for ts in universe.trajectory[mask]:
+        com = protein.center_of_mass() / 10 # check as its not the same as the group
+        coords_nc = colmol.positions / 10 # not centered
+        com_p = np.array([com[0], com[1], 0.0]) # leave z untouched
+        coords = coords_nc - com_p # centralize
+        if mean_coords is None:
+            mean_coords = coords.astype(float)
+            n = 1
+        else:
+            n += 1
+            mean_coords += (coords - mean_coords) / n
+
+    # Ordering the z for unwrapping
+    order = np.argsort(mean_coords[:, 2])
+    return mean_coords[order]
+
 def mean_com(universe, protein, mask, group):
     fib_mean = None
     fib = protein.select_atoms(group)
@@ -41,7 +63,7 @@ def clean_phi(y, x):
     phi_uw = np.unwrap(phi_p)
     return phi_uw
 
-def cyl_proj(molecule, y_c, x_c, r_min = False):
+def cyl_proj(molecule, y_c = 0, x_c = 0, r_min = False):
     x = molecule[:, 0] - x_c
     y = molecule[:, 1] - y_c
     z = molecule[:, 2]
