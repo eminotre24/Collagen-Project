@@ -2,12 +2,17 @@ import numpy as np
 import matplotlib.pyplot as plt
 import gemmi as gm
 
-st = gm.read_structure("collagen-molecule.pdb")
+path = "/Users/alejandro/Desktop/mddocs/processing-analysis/PDBs-Codes/fibrilGen/"
+filepath = path + "collagen-molecule.pdb"
+
+st = gm.read_structure(filepath)
 cell = st.cell
 
 # Fibril Structure
 lattice_points = [[0,0,0],
-                  [1,0,0], [0,1,0], [0,0,1], [-1,0,0], [0,-1,0], [0,0,-1]]
+                  [1,0,0], [0,1,0], [0,0,1], [-1,0,0], [0,-1,0], [0,0,-1],
+                  [1,0,1], [-1,0,1], [0,1,1], [0,-1,1],
+                  [1,0,-1], [-1,0,-1], [0,1,-1], [0,-1,-1]]
 
 x = np.zeros(len(lattice_points))
 y = np.zeros(len(lattice_points))
