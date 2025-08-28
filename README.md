@@ -5,3 +5,6 @@ The content is divided accordingly to the subject of the matter, as the followin
  - **Notes on LCE Theroy and Hydration Model:** Some notes and notebooks which serve as complementary for the understanding of the LCE model, which was the original model to follow through
  - **GROMACS Scripts & Files:** Upon taking the MD approach, we started using the GROMACS software for the simulations, at first trying to replicate the process followed by Liu et al. ([DOI](https://doi.org/10.1016/j.ijbiomac.2025.144728))
  - **Analysis of Results (MDAnalysis):** After getting the first results, started to use the module *MDAnalysis* available on Python, for analyzing output files of GROMACS.
+
+Additional Content:
+ - **PDB Processing:** PDB files Processing Tools.
