@@ -9,6 +9,7 @@ st = gm.read_structure(filepath)
 cell = st.cell
 
 # Fibril Structure
+'''
 lattice_points = [[0,0,0], [1,0,0], [0,1,0], [-1,0,0], [0,-1,0],
                   [1,1,0], [-1,1,0], [1,-1,0], [-1,-1,0],
 
@@ -17,6 +18,9 @@ lattice_points = [[0,0,0], [1,0,0], [0,1,0], [-1,0,0], [0,-1,0],
 
                   [0,0,-1], [1,0,-1], [-1,0,-1], [0,1,-1], [0,-1,-1],
                   [1,1,-1], [-1,1,-1], [1,-1,-1], [-1,-1,-1]]
+'''
+lattice_points = [[0,0,0], [1,0,0], [0,1,0], [0,0,1]]
+
 
 x = np.zeros(len(lattice_points))
 y = np.zeros(len(lattice_points))
@@ -51,7 +55,7 @@ for vec, label in zip(basis, labels):
     dx, dy, dz = xi - x[0], yi - y[0], zi - z[0]
     ax.quiver(z[0], y[0], x[0], dz, dy, dx,
               arrow_length_ratio=0.1, color='r', linewidth=2)
-    ax.text(zi, yi, xi, label, fontsize=12, color='r')
+    ax.text(zi/2, yi, xi, label, fontsize=12, color='r')
 #'''
 
 
@@ -65,3 +69,5 @@ ax.set_ylabel(r'Y ($\AA$)')
 ax.set_zlabel(r'X ($\AA$)')
 plt.tight_layout()
 plt.show()
+
+print(cell)

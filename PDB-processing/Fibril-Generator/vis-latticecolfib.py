@@ -4,8 +4,8 @@ import matplotlib.pyplot as plt
 import gemmi as gm
 
 # Read collagen crystal structure
-path = "./"
-filepath = path + "col.pdb"
+path = "/Users/alejandro/Desktop/mddocs/processing-analysis/PDBs-Codes/fibrilGen/"
+filepath = path + "collagen-molecule.pdb"
 
 col_diam = 15 #Arms
 st = gm.read_structure(filepath)
@@ -27,8 +27,8 @@ def proj(basis, point):
 # --- Visual of Lattice Construction: Primitive Vectors & Diameter of Molecule ---
 scale_factor = 1
 
-points = [[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1]]
-'''
+#points = [[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1]]
+#'''
 points = [[0,0,0], [1,0,0], [0,1,0], [-1,0,0], [0,-1,0],
                   [1,1,0], [-1,1,0], [1,-1,0], [-1,-1,0],
 
@@ -37,7 +37,7 @@ points = [[0,0,0], [1,0,0], [0,1,0], [-1,0,0], [0,-1,0],
 
                   [0,0,-1], [1,0,-1], [-1,0,-1], [0,1,-1], [0,-1,-1],
                   [1,1,-1], [-1,1,-1], [1,-1,-1], [-1,-1,-1]]
-'''
+#'''
 
 num_points = len(points)
 coords = np.zeros((num_points, 2))
