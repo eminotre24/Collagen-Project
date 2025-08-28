@@ -1,0 +1,1 @@
+Here are codes related with the processing of the PDB files (Protein DataBase). For different reasons in this project, mostly for testing, we needed to generate structures which couldnt be found, and also costumize them in the way we wanted.
