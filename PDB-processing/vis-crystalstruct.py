@@ -9,10 +9,14 @@ st = gm.read_structure(filepath)
 cell = st.cell
 
 # Fibril Structure
-lattice_points = [[0,0,0],
-                  [1,0,0], [0,1,0], [0,0,1], [-1,0,0], [0,-1,0], [0,0,-1],
-                  [1,0,1], [-1,0,1], [0,1,1], [0,-1,1],
-                  [1,0,-1], [-1,0,-1], [0,1,-1], [0,-1,-1]]
+lattice_points = [[0,0,0], [1,0,0], [0,1,0], [-1,0,0], [0,-1,0],
+                  [1,1,0], [-1,1,0], [1,-1,0], [-1,-1,0],
+
+                  [0,0,1], [1,0,1], [-1,0,1], [0,1,1], [0,-1,1],
+                  [1,1,1], [-1,1,1], [1,-1,1], [-1,-1,1],
+
+                  [0,0,-1], [1,0,-1], [-1,0,-1], [0,1,-1], [0,-1,-1],
+                  [1,1,-1], [-1,1,-1], [1,-1,-1], [-1,-1,-1]]
 
 x = np.zeros(len(lattice_points))
 y = np.zeros(len(lattice_points))
@@ -31,20 +35,24 @@ ax = fig.add_subplot(111, projection='3d')
 ax.scatter(z, y, x, s=10, color='black', edgecolor='k', alpha=0.7)
 
 # --- Add labels beside each point ---
+'''
 for i, (xi, yi, zi) in enumerate(zip(x, y, z)):
     ax.text(zi, yi, xi, f"{lattice_points[i]}", fontsize=8, color="b")
-
+'''
 
 # --- Visualization Primitive Vectors ---
-'''
+#'''
+basis = [[1,0,0], [0,1,0], [0,0,1]]
 labels = ['a', 'b', 'c']
-for i in range(3):
-    idx = i+1
-    dx, dy, dz = x[idx] - x[0], y[idx] - y[0], z[idx] - z[0]
+for vec, label in zip(basis, labels):
+    fraci = gm.Fractional(vec[0], vec[1], vec[2])
+    carti = cell.orthogonalize(fraci)
+    xi, yi, zi = carti.tolist()
+    dx, dy, dz = xi - x[0], yi - y[0], zi - z[0]
     ax.quiver(z[0], y[0], x[0], dz, dy, dx,
               arrow_length_ratio=0.1, color='r', linewidth=2)
-    ax.text(z[idx], y[idx], x[idx], labels[i], fontsize=12, color='r')
-'''
+    ax.text(zi, yi, xi, label, fontsize=12, color='r')
+#'''
 
 
 ax.set_xlim3d([-700, 700])
