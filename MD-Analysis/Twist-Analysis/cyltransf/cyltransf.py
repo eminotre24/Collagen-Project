@@ -3,6 +3,33 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+def mean_coords_generation(universe, protein, mask, center = True):
+    # Whole System
+    mean_coords = None
+    box_mean = None
+    # Mean
+    for ts in universe.trajectory[mask]:
+        if center:
+            # Center routine
+            com = protein.center_of_mass()
+            coords = universe.select_atoms("all").positions - np.array([com[0], com[1], 0.0])
+        else:
+            coords = universe.select_atoms("all").positions
+        if mean_coords is None:
+            mean_coords = coords.astype(float)
+            box_mean = ts.dimensions.astype(np.float64, copy=True)
+            n = 1
+        else:
+            n += 1
+            mean_coords += (coords - mean_coords) / n
+            box_mean += (ts.dimensions - box_mean) / n
+
+    new_u = universe.copy()
+    new_u.atoms.positions = mean_coords
+    new_u.dimensions = box_mean
+
+    return new_u
+
 def get_mean_coords_mol(universe, protein, molecule, mask, group):
     # Get the Mean Coordinates of the molecule
     mean_coords = None
@@ -84,8 +111,8 @@ def cyl_proj(molecule, y_c = 0, x_c = 0, r_min = False):
     return r, phi, z
 
 def linfitandr2(x, y):
-    fit_res = np.polyfit(x, y, 1, full=True) 
-    m, b = fit_res[0]
+    fit_res = np.polynomial.polynomial.polyfit(x, y, 1, full=True)
+    b, m = fit_res[0]
     # R2
     SSE = fit_res[1][0] 
     SST = np.sum((y - np.mean(y)) ** 2) 
