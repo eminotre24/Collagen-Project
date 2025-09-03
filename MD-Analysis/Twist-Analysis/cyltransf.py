@@ -128,7 +128,8 @@ def remove_ends(percentage, molecule):
 
 # --- Deprecated Routines ---
 # Bin cataloging and visualization
-def bin_cat_vis(rad_mol, phi_mol, z_mol, mol, bins):
+def bin_cat_vis(rad_mol, phi_mol, z_mol, mol, bins, dim):
+    xd, yd, zd = dim
     cat_bins = np.linspace(rad_mol.min(), rad_mol.max(), bins+1)
     bin_ids = np.digitize(rad_mol, cat_bins) - 1
     bin_rad = 0.5 * (cat_bins[:-1] + cat_bins[1:])
