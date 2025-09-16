@@ -17,6 +17,7 @@ def generate_files_prep(name, pdb_file, ff, watertype, solvent_config, pion, nio
     if os.path.isdir("templates/" + ff + ".ff"):
         shutil.copytree("templates/" + ff + ".ff", files_folder + "/" + ff + ".ff")
     shutil.copy("templates/ions.mdp", files_folder)
+    shutil.copy("templates/minimize.mdp", files_folder)
     shutil.copy(pdb_file, files_folder)
 
     with open(files_folder + "/steps.sh", "w") as file:
@@ -99,8 +100,137 @@ def generate_script(name, runtime, user):
 
     print("SLURM script generated with name: " + script_path)
 
-def mdp_parms(temperature , pressure, taup, nvt_time, npt_time, md_time, dt_eq, dt_md):
-    # Edit configuration of mdp files
-    
+def mdp_parms(name, cutoff, temperature , pressure, taup, nvt_time, npt_time, md_time, dt_eq, dt_md):
+    val_sep = 23
+    date_today = datetime.datetime.today().strftime('-%d%m')
+    name_folder = name + date_today
+    files_folder = name_folder + "/" + name + "-files"
 
+    nsteps_nvt = int(nvt_time/2 * 1e6 / dt_eq) # fs * nsteps = ns/2
+    nsteps_npt = int(npt_time * 1e6 / dt_eq) # same but the npt is just 1 process
+    nsteps_md = int(md_time * 1e6 / dt_md)
+
+    write_nvts(files_folder, cutoff, temperature, nsteps_nvt, nvt_time, dt_eq, val_sep)
+    write_npt(files_folder, nsteps_npt, npt_time, dt_eq, taup, pressure, val_sep)
+
+    
+    # Write scripts
     print("MDP files generated")
+
+# --- WRITING FUNCTIONS ---
+
+def write_nvts(folder, cutoff, temperature, nsteps_nvt, nvt_time, dt_eq, val_sep):
+    # NVT Heating
+    shutil.copy("templates/nvt_heating.mdp", folder + "/nvth.mdp")
+    with open(folder + "/nvth.mdp", "r") as f:
+        lines = f.readlines()
+    for i, line in enumerate(lines):
+        stripped = line.strip()
+        # Title
+        if stripped.startswith("title"):
+            lines[i] = f"{'title':<{val_sep}} = NVT Heating\n"
+        # Time
+        elif stripped.startswith("nsteps"):
+            lines[i] = f"{'nsteps':<{val_sep}} = {nsteps_nvt:<9} ; {nvt_time/2} ns\n"
+            lines[i+1] = f"{'dt':<{val_sep}} = {dt_eq/1e3}\n"
+        # Cutoffs
+        elif stripped.strip().startswith("rcoulomb"):
+            lines[i] = f"{'rcoulomb':<{val_sep}} = {cutoff}\n"
+        elif stripped.strip().startswith("rvdw"):
+            lines[i] = f"{'rvdw':<{val_sep}} = {cutoff}\n"
+        # Temperature
+        elif stripped.startswith("ref_t"):
+            lines[i] = f"{'ref_t':<{val_sep}} = {temperature:<7} {temperature:<7}\n"
+        elif stripped.startswith("gen_temp"):
+            lines[i] = f"{'gen_temp':<{val_sep}} = {temperature}\n"
+    with open("./new_nvth.mdp", "w") as f:
+        f.writelines(lines)
+    
+    # NVT Equilibration
+    shutil.copy(folder + "/nvth.mdp", folder + "/nvte.mdp")
+    with open(folder + "/nvte.mdp", "r") as f:
+        lines = f.readlines()
+
+    for i, line in enumerate(lines):
+        stripped = line.strip()
+        # Title
+        if stripped.startswith("title"):
+            lines[i] = f"{'title':<{val_sep}} = NVT Equilibration\n"
+        # No GenVel
+        elif stripped.startswith("gen_vel"):
+            lines[i] = f"{'gen_vel':<{val_sep}} = no\n"
+            del lines[i+1:i+3]
+    with open(folder + "/nvte.mdp", "w") as f:
+        f.writelines(lines)
+    
+def write_npt(folder, nsteps_npt, npt_time, dt_eq, tau_p, pressure, val_sep):
+    shutil.copy(folder + "/nvte.mdp", folder + "/npt.mdp")
+    with open("./npt.mdp", "r") as f:
+        lines = f.readlines()
+
+    for i, line in enumerate(lines):
+        stripped = line.strip()
+
+        # Title
+        if stripped.startswith("title"):
+            lines[i] = f"{'title':<{val_sep}} = NPT\n"
+        
+        # Time
+        elif stripped.startswith("nsteps"):
+            lines[i] = f"{'nsteps':<{val_sep}} = {nsteps_npt:<9} ; {npt_time} ns\n"
+            lines[i+1] = f"{'dt':<{val_sep}} = {dt_eq/1e3}\n"
+
+        # Cutoffs - Same as Heating
+        # Temperature - Same as Heating
+
+        # Pressure Coupling
+        elif stripped.startswith("pcoupl"):
+            pressure_block = [
+                f"{'pcoupl':<{val_sep}} = C-rescale\n",
+                f"{'pcoupltype':<{val_sep}} = isotropic\n",
+                f"{'tau_p':<{val_sep}} = {tau_p}\n",
+                f"{'ref_p':<{val_sep}} = {pressure}\n",
+                f"{'compressibility':<{val_sep}} = 4.5e-5\n",
+                f"{'refcoord_scaling':<{val_sep}} = com\n"
+            ]
+            lines[i:i+1] = pressure_block
+            break
+
+    with open(folder + "/npt.mdp", "w") as f:
+        f.writelines(lines)
+
+def write_md(folder, nsteps_md, md_time, dt_md, val_sep):
+    nstxout_set = False
+    shutil.copy(folder + "/npt.mdp", folder + "/md.mdp")
+    with open(folder + "/md.mdp", "r") as f:
+        lines = f.readlines()
+
+    for i, line in enumerate(lines):
+        stripped = line.strip()
+        # Title
+        if stripped.startswith("title"):
+            lines[i] = f"{'title':<{val_sep}} = MD Run\n"
+        # Remove position restrain
+        elif stripped.startswith("define"):
+            del lines[i]
+        # Time
+        elif stripped.startswith("nsteps"):
+            lines[i] = f"{'nsteps':<{val_sep}} = {nsteps_md:<9} ; {md_time} ns\n"
+            lines[i+1] = f"{'dt':<{val_sep}} = {dt_md/1e3}\n"
+            # Insert COM Restrains
+            lines.insert(i + 2, f"{'comm-mode':<{val_sep}} = Angular\n")
+            lines.insert(i + 3, f"{'comm-grps':<{val_sep}} = Protein\n")
+        # Out Kinematics
+        elif stripped.startswith("nstxout") and (nstxout_set == False):
+            lines[i] = f"{'nstxout':<{val_sep}} = 0\n"
+            lines[i + 1] = f"{'nstvout':<{val_sep}} = 0\n"
+            lines.insert(i + 2, f"{'nstfout':<{val_sep}} = 0\n")
+            nstxout_set = True
+        # Output Macros
+        elif stripped.startswith("nstenergy"):
+            lines[i + 1] = f"{'nstlog':<{val_sep}} = 50000\n"
+            lines.insert(i + 2, f"{'nstxout-compressed':<{val_sep}} = 50000\n")
+            lines.insert(i + 3, f"{'compressed-x-grps':<{val_sep}} = System\n")
+
+    with open("./new_md.mdp", "w") as f:
+        f.writelines(lines)
