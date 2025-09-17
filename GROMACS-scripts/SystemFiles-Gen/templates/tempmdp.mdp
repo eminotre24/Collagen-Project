@@ -1,4 +1,4 @@
-title                   = NVT heating 
+title                   = Template
 define                  = -DPOSRES  ; position restrain the protein
 ; Run parameters - Initial Heating Phase
 integrator              = md        ; leap-frog integrator
@@ -9,13 +9,13 @@ nstxout                 = 50000
 nstvout                 = 50000
 nstenergy               = 50000
 nstlog                  = 50000
-; Bond parameters - General
+; Bond Parameters - General
 continuation            = no        ; first dynamics run
 constraint_algorithm    = lincs     ; holonomic constraints 
 constraints             = h-bonds   ; bonds involving H are constrained
 lincs_iter              = 1         ; accuracy of LINCS
 lincs_order             = 4         ; also related to accuracy
-; Nonbonded settings - General
+; Nonbonded Settings - General
 cutoff-scheme           = Verlet    ; Buffered neighbor searching
 ns_type                 = grid      ; search neighboring grid cells
 nstlist                 = 20        ; 20 fs, largely irrelevant with Verlet

@@ -3,9 +3,11 @@ import os
 import datetime
 import shutil
 
+# ------------ Generate Setup Files (Preparation pre-ACENET) ------------
+
 def generate_files_prep(name, pdb_file, ff, watertype, solvent_config, pion, nion, emtol, dimensions = None, angles = None, distance = None, ccon = None, chain_org = True):
     # Generate preparation files, the structure of the folder of the "project" and the steps scripts ready to jsut execute
-    val_sep = 16
+    val_sep = 15
     # Folders
     date_today = datetime.datetime.today().strftime('-%d%m')
     name_folder = name + date_today
@@ -16,7 +18,7 @@ def generate_files_prep(name, pdb_file, ff, watertype, solvent_config, pion, nio
     # Files
     if os.path.isdir("templates/" + ff + ".ff"):
         shutil.copytree("templates/" + ff + ".ff", files_folder + "/" + ff + ".ff")
-    shutil.copy("templates/ions.mdp", files_folder)
+    shutil.copy("templates/tempem.mdp", files_folder + "/ions.mdp")
     # Add emtol
     with open(files_folder + "/ions.mdp", "r") as f:
         lines = f.readlines()
@@ -26,7 +28,7 @@ def generate_files_prep(name, pdb_file, ff, watertype, solvent_config, pion, nio
         if stripped.startswith("emtol"):
             lines[i] = f"{'emtol':<{val_sep}} = {emtol}\n"
 
-    shutil.copy(files_folder + "/ions.mdp", files_folder + "minimize.mdp")
+    shutil.copy(files_folder + "/ions.mdp", files_folder + "/minimize.mdp")
     # Change Longrange Int.
     with open(files_folder + "/minimize.mdp", "r") as f:
         lines = f.readlines()
@@ -35,6 +37,8 @@ def generate_files_prep(name, pdb_file, ff, watertype, solvent_config, pion, nio
         # Title
         if stripped.startswith("coulombtype"):
             lines[i] = f"{'coulombtype ':<{val_sep}} = PME\n"
+    with open(files_folder + "/minimize.mdp", "w") as f:
+        f.writelines(lines)
 
     shutil.copy(pdb_file, files_folder)
 
@@ -64,6 +68,8 @@ def generate_files_prep(name, pdb_file, ff, watertype, solvent_config, pion, nio
     
 
     print("Files generated in folder: " + name_folder)
+
+# ------------ ACENET Script Generation ------------
 
 def generate_script(name, runtime, user, steps):
     # Generate ACENET script
@@ -122,6 +128,8 @@ def generate_script(name, runtime, user, steps):
 
     print("SLURM script generated with name: " + script_path)
 
+# ------------ MDP Files Generation Function ------------
+
 def mdp_parms(name, cutoff, temperature , pressure, taup, nvt_time, npt_time, md_time, dt_eq, dt_md):
     val_sep = 23
     date_today = datetime.datetime.today().strftime('-%d%m')
@@ -143,7 +151,7 @@ def mdp_parms(name, cutoff, temperature , pressure, taup, nvt_time, npt_time, md
 
 def write_nvts(folder, cutoff, temperature, nsteps_nvt, nvt_time, dt_eq, val_sep):
     # NVT Heating
-    shutil.copy("templates/tempdp.mdp", folder + "/nvt_heating.mdp")
+    shutil.copy("templates/tempmdp.mdp", folder + "/nvt_heating.mdp")
     with open(folder + "/nvt_heating.mdp", "r") as f:
         lines = f.readlines()
     for i, line in enumerate(lines):
@@ -178,6 +186,9 @@ def write_nvts(folder, cutoff, temperature, nsteps_nvt, nvt_time, dt_eq, val_sep
         # Title
         if stripped.startswith("title"):
             lines[i] = f"{'title':<{val_sep}} = NVT Equilibration\n"
+        # A continuation
+        if stripped.startswith("continuation"):
+            lines[i] = f"{'continuation':<{val_sep}} = yes\n"
         # No GenVel
         elif stripped.startswith("gen_vel"):
             lines[i] = f"{'gen_vel':<{val_sep}} = no\n"
