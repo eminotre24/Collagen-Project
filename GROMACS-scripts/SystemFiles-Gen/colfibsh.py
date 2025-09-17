@@ -65,58 +65,60 @@ def generate_files_prep(name, pdb_file, ff, watertype, solvent_config, pion, nio
 
     print("Files generated in folder: " + name_folder)
 
-def generate_script(name, runtime, user):
+def generate_script(name, runtime, user, steps):
     # Generate ACENET script
     date_today = datetime.datetime.today().strftime('-%d%m')
     name_dated = name + date_today
     name_folder = name + "-files"
     script_path = f"{name_dated}/{name}-script.sh"
+    
+    with open(script_path, "w") as file:
+        # Generate script
+        file.write(f"#!/bin/bash\n")
+        # Naming
+        file.write(f"#SBATCH --job-name={name_dated}\n")
+        file.write(f"#SBATCH --output=/home/aenovt/out_err/{name_dated}/out.out\n")
+        file.write(f"#SBATCH --error=/home/aenovt/out_err/{name_dated}/err.err\n")
+        # Runtime
+        file.write(f"#SBATCH --time={runtime}\n")
+        # Specs
+        file.write(f"#SBATCH --nodes=1\n")
+        file.write(f"#SBATCH --ntasks=1\n")
+        file.write(f"#SBATCH --cpus-per-task=12\n")
+        file.write(f"#SBATCH --gres=gpu:1\n")
+        file.write(f"#SBATCH --mem-per-cpu=2G\n")
+        # Notifications
+        file.write(f"#SBATCH --mail-type=BEGIN,END,FAIL\n")
+        file.write(f"#SBATCH --mail-user={user}\n")
+        file.write("\n")
+        # Startup
+        file.write("module purge\n")
+        file.write("module load StdEnv/2023 gcc/12.3 openmpi/4.1.5 cuda/12.2 gromacs/2024.4\n")
+        file.write(f"cd /home/aenovt/scratch/{name_folder}\n")
+        file.write('export OMP_NUM_THREADS="${SLURM_CPUS_PER_TASK:-1}"\n')
+        file.write("\n")
+        # Processes
+        if steps[0]: # EM
+            file.write("srun gmx grompp -f minimize.mdp -c colfib-solvion.gro -p topol.top -o em.tpr\n")
+            file.write("srun gmx mdrun -deffnm em -ntomp $OMP_NUM_THREADS -ntmpi $SLURM_NTASKS -nb gpu\n")
+            file.write("\n")
 
-    # Script content
-    script_content = f"""#!/bin/bash
-                        #SBATCH --job-name={name_dated}
-                        #SBATCH --output=/home/aenovt/out_err/{name_dated}/out.out
-                        #SBATCH --error=/home/aenovt/out_err/{name_dated}/err.err
-                        #SBATCH --time={runtime}
-                        #SBATCH --nodes=1
-                        #SBATCH --ntasks=1
-                        #SBATCH --cpus-per-task=12
-                        #SBATCH --gres=gpu:1
-                        #SBATCH --mem-per-cpu=2G
-                        #SBATCH --mail-type=BEGIN,END,FAIL
-                        #SBATCH --mail-user={user}
+        if steps[1]: # NVT
+            file.write("srun gmx grompp -f nvt_heating.mdp -c em.gro -r em.gro -p topol.top -o nvt_heating.tpr\n")
+            file.write("srun gmx mdrun -deffnm nvt_heating -ntomp $OMP_NUM_THREADS -ntmpi $SLURM_NTASKS -nb gpu -pme gpu -update gpu -bonded cpu\n")
+            file.write("srun gmx grompp -f nvt_equilibration.mdp -c nvt_heating.gro -r nvt_heating.gro -t nvt_heating.cpt -p topol.top -o nvt_equilibration.tpr\n")
+            file.write("srun gmx mdrun -deffnm nvt_equilibration -ntomp $OMP_NUM_THREADS -ntmpi $SLURM_NTASKS -nb gpu -pme gpu -update gpu -bonded cpu\n")
+            file.write("\n")
 
-                        module purge
-                        module load StdEnv/2023 gcc/12.3 openmpi/4.1.5 cuda/12.2 gromacs/2024.4
+        if steps[2]: # NPT
+            file.write("srun gmx grompp -f npt.mdp -c nvt_equilibration.gro -r nvt_equilibration.gro -t nvt_equilibration.cpt -p topol.top -o npt.tpr\n")
+            file.write("srun gmx mdrun -deffnm npt -ntomp $OMP_NUM_THREADS -ntmpi $SLURM_NTASKS -nb gpu -pme gpu -update gpu -bonded cpu\n")
+            file.write("\n")
 
-                        cd /home/aenovt/scratch/{name_folder}
-                        export OMP_NUM_THREADS="${{SLURM_CPUS_PER_TASK:-1}}"
-
-                        # Energy Minimization Phase
-                        srun gmx grompp -f minimize.mdp -c colfib-solvion.gro -p topol.top -o em.tpr
-                        srun gmx mdrun -deffnm em -ntomp $OMP_NUM_THREADS -ntmpi $SLURM_NTASKS -nb gpu
-
-                        # Heating Phase
-                        srun gmx grompp -f nvt_heating.mdp -c em.gro -r em.gro -p topol.top -o nvt_heating.tpr
-                        srun gmx mdrun -deffnm nvt_heating -ntomp $OMP_NUM_THREADS -ntmpi $SLURM_NTASKS -nb gpu -pme gpu -update gpu -bonded cpu
-
-                        # NVT Equilibration
-                        srun gmx grompp -f nvt_equilibration.mdp -c nvt_heating.gro -r nvt_heating.gro -t nvt_heating.cpt -p topol.top -o nvt_equilibration.tpr
-                        srun gmx mdrun -deffnm nvt_equilibration -ntomp $OMP_NUM_THREADS -ntmpi $SLURM_NTASKS -nb gpu -pme gpu -update gpu -bonded cpu
-
-                        # NPT Phase
-                        srun gmx grompp -f npt.mdp -c nvt_equilibration.gro -r nvt_equilibration.gro -t nvt_equilibration.cpt -p topol.top -o npt.tpr
-                        srun gmx mdrun -deffnm npt -ntomp $OMP_NUM_THREADS -ntmpi $SLURM_NTASKS -nb gpu -pme gpu -update gpu -bonded cpu
-
-                        # Production Run
-                        srun gmx grompp -f md.mdp -c npt.gro -t npt.cpt -p topol.top -o md_1.tpr -maxwarn 2
-                        srun gmx mdrun -deffnm md_1 -ntomp $OMP_NUM_THREADS -ntmpi $SLURM_NTASKS -nb gpu -pme gpu -update gpu -bonded cpu
-                        """
-
-    # Write the script to file
-    with open(script_path, "w") as f:
-        f.write(script_content)
-
+        if steps[3]: # MD Run
+            file.write("srun gmx grompp -f md.mdp -c npt.gro -t npt.cpt -p topol.top -o md_1.tpr -maxwarn 2\n")
+            file.write("srun gmx mdrun -deffnm md_1 -ntomp $OMP_NUM_THREADS -ntmpi $SLURM_NTASKS -nb gpu -pme gpu -update gpu -bonded cpu\n")
+            file.write("\n")
 
     print("SLURM script generated with name: " + script_path)
 
