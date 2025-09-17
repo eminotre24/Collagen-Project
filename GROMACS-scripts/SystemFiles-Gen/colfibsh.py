@@ -3,9 +3,9 @@ import os
 import datetime
 import shutil
 
-def generate_files_prep(name, pdb_file, ff, watertype, solvent_config, pion, nion, dimensions = None, angles = None, distance = None, ccon = None, chain_org = True):
+def generate_files_prep(name, pdb_file, ff, watertype, solvent_config, pion, nion, emtol, dimensions = None, angles = None, distance = None, ccon = None, chain_org = True):
     # Generate preparation files, the structure of the folder of the "project" and the steps scripts ready to jsut execute
-
+    val_sep = 16
     # Folders
     date_today = datetime.datetime.today().strftime('-%d%m')
     name_folder = name + date_today
@@ -17,7 +17,25 @@ def generate_files_prep(name, pdb_file, ff, watertype, solvent_config, pion, nio
     if os.path.isdir("templates/" + ff + ".ff"):
         shutil.copytree("templates/" + ff + ".ff", files_folder + "/" + ff + ".ff")
     shutil.copy("templates/ions.mdp", files_folder)
-    shutil.copy("templates/minimize.mdp", files_folder)
+    # Add emtol
+    with open(files_folder + "/ions.mdp", "r") as f:
+        lines = f.readlines()
+    for i, line in enumerate(lines):
+        stripped = line.strip()
+        # Title
+        if stripped.startswith("emtol"):
+            lines[i] = f"{'emtol':<{val_sep}} = {emtol}\n"
+
+    shutil.copy(files_folder + "/ions.mdp", files_folder + "minimize.mdp")
+    # Change Longrange Int.
+    with open(files_folder + "/minimize.mdp", "r") as f:
+        lines = f.readlines()
+    for i, line in enumerate(lines):
+        stripped = line.strip()
+        # Title
+        if stripped.startswith("coulombtype"):
+            lines[i] = f"{'coulombtype ':<{val_sep}} = PME\n"
+
     shutil.copy(pdb_file, files_folder)
 
     with open(files_folder + "/steps.sh", "w") as file:
@@ -42,6 +60,8 @@ def generate_files_prep(name, pdb_file, ff, watertype, solvent_config, pion, nio
             file.write(f"echo 13 | gmx genion -s ions.tpr -o colfib-solvion.gro -p topol.top -pname {pion} -nname {nion} -neutral\n")
         else:
             file.write(f"echo 13 | gmx genion -s ions.tpr -o colfib-solvion.gro -p topol.top -pname {pion} -nname {nion} -neutral -conc {ccon}\n")
+
+    
 
     print("Files generated in folder: " + name_folder)
 
@@ -112,7 +132,7 @@ def mdp_parms(name, cutoff, temperature , pressure, taup, nvt_time, npt_time, md
 
     write_nvts(files_folder, cutoff, temperature, nsteps_nvt, nvt_time, dt_eq, val_sep)
     write_npt(files_folder, nsteps_npt, npt_time, dt_eq, taup, pressure, val_sep)
-
+    write_md(files_folder, nsteps_md, md_time, dt_md, val_sep)
     
     # Write scripts
     print("MDP files generated")
@@ -121,8 +141,8 @@ def mdp_parms(name, cutoff, temperature , pressure, taup, nvt_time, npt_time, md
 
 def write_nvts(folder, cutoff, temperature, nsteps_nvt, nvt_time, dt_eq, val_sep):
     # NVT Heating
-    shutil.copy("templates/nvt_heating.mdp", folder + "/nvth.mdp")
-    with open(folder + "/nvth.mdp", "r") as f:
+    shutil.copy("templates/tempdp.mdp", folder + "/nvt_heating.mdp")
+    with open(folder + "/nvt_heating.mdp", "r") as f:
         lines = f.readlines()
     for i, line in enumerate(lines):
         stripped = line.strip()
@@ -143,12 +163,12 @@ def write_nvts(folder, cutoff, temperature, nsteps_nvt, nvt_time, dt_eq, val_sep
             lines[i] = f"{'ref_t':<{val_sep}} = {temperature:<7} {temperature:<7}\n"
         elif stripped.startswith("gen_temp"):
             lines[i] = f"{'gen_temp':<{val_sep}} = {temperature}\n"
-    with open("./new_nvth.mdp", "w") as f:
+    with open(folder + "/nvt_heating.mdp", "w") as f:
         f.writelines(lines)
     
     # NVT Equilibration
-    shutil.copy(folder + "/nvth.mdp", folder + "/nvte.mdp")
-    with open(folder + "/nvte.mdp", "r") as f:
+    shutil.copy(folder + "/nvt_heating.mdp", folder + "/nvt_equilibration.mdp")
+    with open(folder + "/nvt_equilibration.mdp", "r") as f:
         lines = f.readlines()
 
     for i, line in enumerate(lines):
@@ -160,12 +180,12 @@ def write_nvts(folder, cutoff, temperature, nsteps_nvt, nvt_time, dt_eq, val_sep
         elif stripped.startswith("gen_vel"):
             lines[i] = f"{'gen_vel':<{val_sep}} = no\n"
             del lines[i+1:i+3]
-    with open(folder + "/nvte.mdp", "w") as f:
+    with open(folder + "/nvt_equilibration.mdp", "w") as f:
         f.writelines(lines)
     
 def write_npt(folder, nsteps_npt, npt_time, dt_eq, tau_p, pressure, val_sep):
-    shutil.copy(folder + "/nvte.mdp", folder + "/npt.mdp")
-    with open("./npt.mdp", "r") as f:
+    shutil.copy(folder + "/nvt_equilibration.mdp", folder + "/npt.mdp")
+    with open(folder + "/npt.mdp", "r") as f:
         lines = f.readlines()
 
     for i, line in enumerate(lines):
@@ -232,5 +252,5 @@ def write_md(folder, nsteps_md, md_time, dt_md, val_sep):
             lines.insert(i + 2, f"{'nstxout-compressed':<{val_sep}} = 50000\n")
             lines.insert(i + 3, f"{'compressed-x-grps':<{val_sep}} = System\n")
 
-    with open("./new_md.mdp", "w") as f:
+    with open(folder + "/md.mdp", "w") as f:
         f.writelines(lines)
