@@ -1,0 +1,5 @@
+curve-1808: Analysis of Full Fibril. Simulation 0-25 ns. First Approach to all-molecule twist analysis. Cylindrical projection.
+curve2-1608: Most of the curve-1808. Algorithm for cutting margin of the molecules implemented.
+equilibrated-analysis: Some statistics/graphs of the system fluctutations. Mean position.
+energy-analysis: Graphs for reading .xvg files of energy and some intro analysis (Acumulated Mean and an Error Calculation)
+read-all: Read .xvg files generated (Manual Identification needed, using *NumPy*)

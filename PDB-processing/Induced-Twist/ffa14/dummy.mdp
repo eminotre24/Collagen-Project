@@ -1,4 +1,0 @@
-; dummy file
-integrator = steep
-nsteps     = 1
-dt         = 0.001
