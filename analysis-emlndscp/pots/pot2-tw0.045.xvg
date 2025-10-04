@@ -1,0 +1,28 @@
+# This file was created Fri Oct  3 12:39:19 2025
+# Created by:
+#                      :-) GROMACS - gmx energy, 2024.4 (-:
+# 
+# Executable:   /usr/local/gromacs/bin/gmx
+# Data prefix:  /usr/local/gromacs
+# Working dir:  /Users/enovales/Desktop/colproj/emlndscp/emres
+# Command line:
+#   gmx energy -f em2-tw0.045.edr -o pots/pot2-tw0.045.xvg
+# gmx energy is part of G R O M A C S:
+#
+# Glycine aRginine prOline Methionine Alanine Cystine Serine
+#
+@    title "GROMACS Energies"
+@    xaxis  label "Time (ps)"
+@    yaxis  label "(kJ/mol)"
+@TYPE xy
+@ view 0.15, 0.15, 0.75, 0.85
+@ legend on
+@ legend box on
+@ legend loctype view
+@ legend 0.78, 0.8
+@ legend length 2
+@ s0 legend "Potential"
+    0.000000  -44622016.000000
+    0.000000  -44713788.000000
+ 1000.000000  -48031104.000000
+ 1933.000000  -48341516.000000

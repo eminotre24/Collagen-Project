@@ -1,0 +1,28 @@
+# This file was created Thu Oct  2 17:54:16 2025
+# Created by:
+#                      :-) GROMACS - gmx energy, 2024.4 (-:
+# 
+# Executable:   /usr/local/gromacs/bin/gmx
+# Data prefix:  /usr/local/gromacs
+# Working dir:  /Users/enovales/Desktop/colproj/emlndscp/emres
+# Command line:
+#   gmx energy -f em2-tw0.055.edr -o pots/pot2-tw0.055.xvg
+# gmx energy is part of G R O M A C S:
+#
+# Gromacs Runs On Most of All Computer Systems
+#
+@    title "GROMACS Energies"
+@    xaxis  label "Time (ps)"
+@    yaxis  label "(kJ/mol)"
+@TYPE xy
+@ view 0.15, 0.15, 0.75, 0.85
+@ legend on
+@ legend box on
+@ legend loctype view
+@ legend 0.78, 0.8
+@ legend length 2
+@ s0 legend "Potential"
+    0.000000  -44617460.000000
+    0.000000  -44709344.000000
+ 1000.000000  -48028660.000000
+ 1838.000000  -48300936.000000
