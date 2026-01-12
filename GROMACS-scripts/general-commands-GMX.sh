@@ -63,3 +63,7 @@ gmx trjconv -s md_0_1.tpr -f md_0_1.xtc -o md_0_1_noPBC.xtc -pbc mol
 
 # Get COM evolution
 gmx traj -f md_1.xtc -s md_1.tpr -ox com.xvg -com
+
+# Extension of a finished sim (testing)
+gmx convert-tpr -s md_1.tpr -extend 50000000 -o md_1_cont.tpr
+gmx mdrun -s md_1_cont.tpr -cpi md_1.cpt -deffnm md_1 -append -ntomp $OMP_NUM_THREADS -ntmpi $SLURM_NTASKS -nb gpu -pme gpu -update gpu -bonded cpu
